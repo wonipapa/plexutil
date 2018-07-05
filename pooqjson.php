@@ -24,7 +24,7 @@ try {
     $studio = $tvshow['channelname'];
     $originally_available_at = $tvshow['releasedate'];
     $summary = trim($tvshow['programsynopsis']);
-    $poster_url = 'https://'.trim($tvshow['programposterimage']);
+    $poster_url = 'http://'.trim($tvshow['programposterimage']);
 
     foreach($episode_json as $episodeinfo):
         $episodes[] = array(
