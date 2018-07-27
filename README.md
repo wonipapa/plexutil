@@ -5,7 +5,7 @@
 ### 사용법
 먼저 리눅스에 접속한 후 실행 권한을 준다.  
 chmod +x daumjson.php   
-json 파일로 만들고자 하는 tv 프로그램을 http://movie.daum.net 에서 검색후 검색결과 url의 http://movie.daum.net/tv/main?tvProgramId=숫자 의 숫자부분을 이용한다.  
+json 파일로 만들고자 하는 tv 프로그램을 http://www.daum.net 에서 검색후 검색결과 url의 https://search.daum.net/search?w=tv&q=검색어&irk=숫자&irt=tv-program&DA=TVP 의 숫자부분을 이용한다.  
 ./daumjson.php 숫자  
 옵션사항으로 회차 번호를 부여할 수 있다. 회차 번호 부여시 에피소드 번호가 부여한 회차번호부터 시작한다.  
 ./daumjson.php 숫자  10
