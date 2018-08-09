@@ -1,4 +1,11 @@
 # 플렉스 에이전트용 유틸티리
+## PHP7 버전 용입니다
+php 7이 아니라면 아래 부분을
+$ProgramId = $argv[1] ?? exit();
+$start_num = $argv[2] ?? 1;
+이와 같이 바꿔주세요.
+$ProgramId = isset($argv[1]) ? $argv[1] :  exit();
+$start_num = isset($argv[2]) ? $argv[2] : 1;
 ## daumjson
 다음에서 제공하는 TV 프로그램 정보를 json 파일로 만들어 주는 유틸리티
 
@@ -18,7 +25,7 @@ Pooq에서 제공하는 TV 프로그램 정보를 json 파일로 만들어 주�
 chmod +x pooqjson.php   
 json 파일로 만들고자 하는 tv 프로그램을 http://www.pooq.co.kr 에서 검색후 검색결과 url의 http://www.pooq.co.kr/player/vod.html?programid=문자 의 문자 부분을 이용한다.  
 ./pooqjson.php 문자  
-옵션사항으로 회차 번호를 부여할 수 있다. 회차 번호 부여시 에피소드 번호가 부여한 회차번호부터 시작한다.
+옵션사항으로 회차 번호를 부여할 수 있다. 회차 번호 부여시 에피소드 번호가 부여한 회차번호부터 시작한다.  
 ./pooqjson.php 문자  10
 
 
