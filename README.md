@@ -1,11 +1,11 @@
 # 플렉스 에이전트용 유틸티리
 ## PHP7 버전 용입니다
-php 7이 아니라면 아래 부분을
-$ProgramId = $argv[1] ?? exit();
-$start_num = $argv[2] ?? 1;
+php 7이 아니라면 아래 부분을  
+$ProgramId = $argv[1] ?? exit();  
+$start_num = $argv[2] ?? 1;  
 이와 같이 바꿔주세요.
-$ProgramId = isset($argv[1]) ? $argv[1] :  exit();
-$start_num = isset($argv[2]) ? $argv[2] : 1;
+$ProgramId = isset($argv[1]) ? $argv[1] :  exit();  
+$start_num = isset($argv[2]) ? $argv[2] : 1;  
 ## daumjson
 다음에서 제공하는 TV 프로그램 정보를 json 파일로 만들어 주는 유틸리티
 
