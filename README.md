@@ -3,7 +3,7 @@
 php 7이 아니라면 아래 부분을  
 $ProgramId = $argv[1] ?? exit();  
 $start_num = $argv[2] ?? 1;  
-이와 같이 바꿔주세요.
+이와 같이 바꿔주세요.  
 $ProgramId = isset($argv[1]) ? $argv[1] :  exit();  
 $start_num = isset($argv[2]) ? $argv[2] : 1;  
 ## daumjson
