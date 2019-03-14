@@ -32,7 +32,8 @@ json 파일로 만들고자 하는 tv 프로그램을 http://www.pooq.co.kr 에�
 결과 파일은 TV 프로그램명.json 파일로 저장되며, 편집기로 필요한 추가 사항등을 편집할 수 있다.
 
 ## plextojson
-plex에서 관리되는 영화, TV를 json 파일로 저장한다  
+plex에서 관리되는 영화, TV의 라이브러리를 json 파일로 저장한다  
+주 용도는 plex 라이브러리의 메타정보를 외부 환경의 변화에 상관없이 보관하여 라이브러리 복구, 이동시 편의를 위한 것이다  
 영화는 영화명.json, 영화명 poster.jpg, 영화명 art.jpg 로 저장된다.  
 
 TV는 TV 프로그램명.json, TV 프로그램명 시즌 01.json, TV 프로그램명 시즌 02.json 형식으로 저장된다  
@@ -44,8 +45,12 @@ $PLEX_DIR = '/var/lib/plexmediaserver/Library/Application Support/Plex Media Ser
 $PLEX_META_DIR = $PLEX_DIR."/"."Metadata";  
 $PLEX_DB_DIR = $PLEX_DIR."/"."Plug-in Support/Databases";  
 $DB = $PLEX_DB_DIR."/"."com.plexapp.plugins.library.db";  
+
 ### 사용법
 ./plextojson 번호  
 
 번호는 plex 주소에서 확인가능하다. 아래예에서는 60813이 번호다  
 http://****library%2Fmetadata%2F60813
+
+## toDo
+만들어진 json 파일을 활용하는 agent는 추후 공개 예정
