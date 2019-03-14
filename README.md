@@ -38,6 +38,12 @@ plex에서 관리되는 영화, TV를 json 파일로 저장한다
 TV는 TV 프로그램명.json, TV 프로그램명 시즌 01.json, TV 프로그램명 시즌 02.json 형식으로 저장된다  
 TV 프로그래명.json 에는 전반적인 정보가, TV 프로그램명 시즌 01.json에는 에피소드 정보와 제작자 등의 정보가 저장된다.  
 
+처음 사용할 때는 plextojson.php의 내용중 아래 부분을 자신에 맞게 수정해야 한다.  
+
+$PLEX_DIR = '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server';  
+$PLEX_META_DIR = $PLEX_DIR."/"."Metadata";  
+$PLEX_DB_DIR = $PLEX_DIR."/"."Plug-in Support/Databases";  
+$DB = $PLEX_DB_DIR."/"."com.plexapp.plugins.library.db";  
 ### 사용법
 ./plextojson 번호  
 
