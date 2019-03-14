@@ -7,7 +7,7 @@ $start_num = $argv[2] ?? 1;
 $ProgramId = isset($argv[1]) ? $argv[1] :  exit();  
 $start_num = isset($argv[2]) ? $argv[2] : 1;  
 ## daumjson
-다음에서 제공하는 TV 프로그램 정보를 json 파일로 만들어 주는 유틸리티
+다음에서 제공하는 TV 프로그램 정보를 json 파일로 만들어 주는 유틸리티-다음 사이트 변경으로 작동안됨
 
 ### 사용법
 먼저 리눅스에 접속한 후 실행 권한을 준다.  
@@ -31,3 +31,15 @@ json 파일로 만들고자 하는 tv 프로그램을 http://www.pooq.co.kr 에�
 
 결과 파일은 TV 프로그램명.json 파일로 저장되며, 편집기로 필요한 추가 사항등을 편집할 수 있다.
 
+## plextojson
+plex에서 관리되는 영화, TV를 json 파일로 저장한다  
+영화는 영화명.json, 영화명 poster.jpg, 영화명 art.jpg 로 저장된다.  
+
+TV는 TV 프로그램명.json, TV 프로그램명 시즌 01.json, TV 프로그램명 시즌 02.json 형식으로 저장된다  
+TV 프로그래명.json 에는 전반적인 정보가, TV 프로그램명 시즌 01.json에는 에피소드 정보와 제작자 등의 정보가 저장된다.  
+
+### 사용법
+./plextojson 번호  
+
+번호는 plex 주소에서 확인가능하다. 아래예에서는 60813이 번호다  
+http://****library%2Fmetadata%2F60813
