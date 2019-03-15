@@ -7,6 +7,7 @@ mb_internal_encoding("UTF-8");
 $id = $argv[1] ?? exit();
 $PLEX_DIR = '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server';
 $PLEX_META_DIR = $PLEX_DIR."/"."Metadata";
+$PLEX_MEDIA_DIR = $PLEX_DIR."/"."Media/localhost";
 $PLEX_DB_DIR = $PLEX_DIR."/"."Plug-in Support/Databases";
 $DB = $PLEX_DB_DIR."/"."com.plexapp.plugins.library.db";
 try {
@@ -22,6 +23,7 @@ try {
     $info =  $sth->fetch(PDO::FETCH_ASSOC);
     $sha = sha1($info['guid']);
     $title = trim($info['title']);
+    $file_title = preg_replace('/[!\-,#@$%^&*()\\/:;?<>|\.\[\]\{\}_=+`~]+/', '', $title);
     $original_title = trim($info['original_title']);
     $rating = sprintf("%.1f", $info['rating']);
     $summary = trim($info['summary']);
@@ -31,6 +33,11 @@ try {
 
     $sha = sha1($info['guid']);
     if($info['metadata_type'] == 1): // MOVIE
+        $movie_dirname = $year ? $file_title." (".$year.")" : $file_title;
+        $movie_filename = $movie_dirname."/".$file_title;
+        if(!is_dir($movie_dirname)) :
+            mkdir($movie_dirname);
+        endif;
         $genres = $collections = $directors = $writers = $roles = $producers = $countries = $movie_json = array();
         //추가정보 가져오기
         $querym = "SELECT t1.tag, t2.text, t1.tag_type, t1.user_thumb_url FROM tags t1 LEFT JOIN taggings t2 ON t1.id=t2.tag_id WHERE t2.metadata_item_id=:id ORDER BY t1.tag_type, t2.`index`";
@@ -63,16 +70,16 @@ try {
             endswitch;
         endwhile;
         //포스터, 아트 이미지 가져오기
-        $PLEX_META_DIR = $PLEX_META_DIR."/Movies/".$sha[0]."/".substr($sha,1).".bundle/Contents";
+        $PLEX_POSTER_DIR = $PLEX_META_DIR."/Movies/".$sha[0]."/".substr($sha,1).".bundle/Contents";
         if($info['user_thumb_url']):
-            $postername = $title." ";
-            $posterinfo = array($postername, $PLEX_META_DIR, $info['user_thumb_url'], 1);
-            getimage($posterinfo);
+            $postername = $movie_filename;
+            $posterinfo = array($postername, $PLEX_POSTER_DIR, $info['user_thumb_url'], 1);
+            getposter($posterinfo);
         endif;
         if($info['user_art_url']):
-            $artname = $title." ";
-            $artinfo = array($artname, $PLEX_META_DIR, $info['user_art_url'], 1);
-            getimage($artinfo);
+            $artname = $movie_filename;
+            $artinfo = array($artname, $PLEX_POSTER_DIR, $info['user_art_url'], 1);
+            getposter($artinfo);
         endif;
         //JSON 정보
         $movie_json = array(
@@ -91,8 +98,13 @@ try {
             'genres' => $genres,
             'collections' => $collections
         );
-        savejson($movie_json);
+        savejson($movie_filename, $movie_json);
     elseif($info['metadata_type'] == 2): //TV
+        $tvshow_dirname =  $year ? $file_title." (".$year.")" : $file_title;
+        $tvshow_filename = $tvshow_dirname."/".$file_title;
+        if(!is_dir($tvshow_dirname)) :
+            mkdir($tvshow_dirname);
+        endif;
         //추가정보 가져오기
         $tvshow_json = array();
         $genres = $collections = $roles = $countries = array();
@@ -117,16 +129,16 @@ try {
             endswitch;
         endwhile;        
         //포스터, 아트 이미지 가져오기
-        $PLEX_META_DIR = $PLEX_META_DIR."/TV Shows/".$sha[0]."/".substr($sha,1).".bundle/Contents";
+        $PLEX_POSTER_DIR = $PLEX_META_DIR."/TV Shows/".$sha[0]."/".substr($sha,1).".bundle/Contents";
         if($info['user_thumb_url']):
-            $postername = $title." ";
-            $posterinfo = array($postername, $PLEX_META_DIR, $info['user_thumb_url'], 1);
-            getimage($posterinfo);
+            $postername = $tvshow_filename;
+            $posterinfo = array($postername, $PLEX_POSTER_DIR, $info['user_thumb_url'], 1);
+            getposter($posterinfo);
         endif;
         if($info['user_art_url']):
-            $artname = $title." ";
-            $artinfo = array($artname, $PLEX_META_DIR, $info['user_art_url'], 1);
-            getimage($artinfo);         
+            $artname = $tvshow_filename;
+            $artinfo = array($artname, $PLEX_POSTER_DIR, $info['user_art_url'], 1);
+            getposter($artinfo);         
         endif;
         $tvshow_json = array(
             'title' => $title,
@@ -141,26 +153,32 @@ try {
             'genres' => $genres,
             'collections' => $collections
         );
-        savejson($tvshow_json);
+        savejson($tvshow_filename, $tvshow_json);
         //시즌 정보 가져오기
         $query_s = "SELECT id, `index`, guid, user_thumb_url,user_art_url FROM metadata_items WHERE parent_id=:id ORDER BY `index`";
         $ssth = $db->prepare($query_s, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
         $ssth->bindParam(':id', $id, PDO::PARAM_STR);
         $ssth->execute();
+
         while($season_info = $ssth->fetch(PDO::FETCH_ASSOC)):
+            $season_dirname = $season_info['index'] == '0' ? $tvshow_dirname."/".$file_title." 특별편" : $tvshow_dirname."/".$file_title." 시즌 ".sprintf('%02d', $season_info['index']);
+            $season_filename = $season_info['index'] == '0' ? $season_dirname."/".$file_title." 특별편" : $season_dirname."/".$file_title." 시즌 ".sprintf('%02d', $season_info['index']);
+            if(!is_dir($season_dirname)) :
+                mkdir($season_dirname);
+            endif;
             $season_json = $episodes = array();
             if($season_info['user_thumb_url']):
-                $season_postername = $title." 시즌 ".sprintf('%02d', $season_info['index'])." ";
-                $season_posterinfo = array($season_postername, $PLEX_META_DIR, $season_info['user_thumb_url'], 2);
-                getimage($season_posterinfo);
+                $season_postername = $season_filename;
+                $season_posterinfo = array($season_postername, $PLEX_POSTER_DIR, $season_info['user_thumb_url'], 2);
+                getposter($season_posterinfo);
             endif;
             if($season_info['user_art_url']):
-                $season_postername = $title." 시즌 ".sprintf('%02d', $season_info['index'])." ";
-                $season_posterinfo = array($season_postername, $PLEX_META_DIR, $season_info['user_art_url'], 2);
-                getimage($season_posterinfo);
+                $season_artname = $season_filename;
+                $season_artinfo = array($season_artname, $PLEX_POSTER_DIR, $season_info['user_art_url'], 2);
+                getposter($season_artinfo);
             endif;
             //에피소드 정보 가져오기
-            $query_e = "SELECT id, `index`, title, summary, originally_available_at FROM metadata_items WHERE parent_id=:parent_id ORDER BY `index`";
+            $query_e = "SELECT id, `index`, title, summary, originally_available_at, user_thumb_url, user_art_url FROM metadata_items WHERE parent_id=:parent_id ORDER BY `index`";
             $esth = $db->prepare($query_e, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
             $esth->bindParam(':parent_id', $season_info['id'], PDO::PARAM_STR);
             $esth->execute();
@@ -177,6 +195,17 @@ try {
                     'broadcastDate'=> date('Ymd', strtotime($episode_info['originally_available_at']))
 
                 );
+                if($episode_info['user_thumb_url']):
+                    $episode_thumbname = $season_filename." episode_thumb ".sprintf('%02d', $episode_info['index']);
+                    $episode_thumbinfo = array($episode_thumbname, $PLEX_MEDIA_DIR, $episode_info['user_thumb_url']);
+                    getthumb($episode_thumbinfo);
+                endif;
+                if($episode_info['user_art_url']):
+                    $episode_artname = $season_filename." episode_art ".sprintf('%02d', $episode_info['index']);
+                    $episode_artinfo = array($episode_artname, $PLEX_MEDIA_DIR, $episode_info['user_art_url']);
+                    getthumb($episode_artinfo);
+                endif;
+
                 while($etc_info = $tsth->fetch(PDO::FETCH_ASSOC)):
                     switch($etc_info['tag_type']):
                         case "4":
@@ -195,24 +224,17 @@ try {
         $writers = array_unique($writers, SORT_REGULAR);
         $producers = array_unique($producers, SORT_REGULAR);
         $season_json = array(
-            'title' => $season_info['index'] == '0' ?$title." 특별편" : $title." 시즌 ".sprintf('%02d', $season_info['index']),
             'directors' => $directors,
             'producers' => $producers,
             'writers' => $writers,
             'episodes' => $episodes,
         );
-        savejson($season_json);
+        savejson($season_filename, $season_json);
         endwhile;
     endif;
 
     // Close file db connection
     $db = null;
-    /*
-    $json_file = $info['title']." (".$info['year'].').json';
-    $fp = fopen($json_file, 'w+');
-    fwrite($fp, json_encode($json_array, JSON_PRETTY_PRINT+JSON_UNESCAPED_UNICODE));
-    fclose($fp);
-    */
 }
 catch(PDOException $e) {
     // Print PDOException message
@@ -220,7 +242,7 @@ catch(PDOException $e) {
     echo "\n";
 }
 
-function getimage($imageinfo) {
+function getposter($imageinfo) {
     list($imagename, $dir, $image_url, $type) = $imageinfo;
     $ext = '';
     $image_url = str_replace('metadata://', '', $image_url);
@@ -228,15 +250,39 @@ function getimage($imageinfo) {
         list($imagetype, $agent_image) = explode("/", $image_url);
         $tmp = explode("_", $agent_image);
         $image = $dir."/".implode('_', explode('_', $agent_image, -1))."/".$imagetype."/".end($tmp);
-        $imagetype = $imagetype == 'posters' ? 'poster' : $imagetype;
+        $imagetype = $imagetype == 'posters' ? ' poster' : " ".$imagetype;
         $imagename = $imagename.$imagetype;
     elseif($type == 2):
         list($season, $season_number, $imagetype, $agent_image) = explode("/", $image_url);
         $tmp = explode("_", $agent_image);
         $image = $dir."/".implode('_', explode('_', $agent_image, -1))."/".$season."/".$season_number."/".$imagetype."/".end($tmp);
-        $imagetype = $imagetype == 'posters' ? 'poster' : $imagetype;
+        $imagetype = $imagetype == 'posters' ? ' poster' : " ".$imagetype;
         $imagename = $imagename.$imagetype;
     endif;
+    if(file_exists($image)) :
+
+        switch(exif_imagetype($image)):
+            case IMAGETYPE_GIF:
+                $ext = ".gif";
+                break;
+            case IMAGETYPE_JPEG:
+                $ext = ".jpg";
+                break;
+            case IMAGETYPE_PNG:
+                $ext = ".png";
+                break;
+        endswitch;
+        if($ext):
+            copy($image, $imagename.$ext);
+        endif;
+    endif;
+}
+
+function getthumb($imageinfo) {
+    list($imagename, $dir, $image_url) = $imageinfo;
+    $ext = '';
+    $image_url = str_replace('media://', '', $image_url);
+    $image = $dir."/".$image_url;
     if(file_exists($image)) :
         switch(exif_imagetype($image)):
             case IMAGETYPE_GIF:
@@ -255,9 +301,9 @@ function getimage($imageinfo) {
     endif;
 }
 
-function savejson($json){
-    $json_file = $json['title'].".json";
-    $fp = fopen($json_file, 'w+');
+function savejson($filename, $json){
+    $filename = $filename.".json";
+    $fp = fopen($filename, 'w+');
     fwrite($fp, json_encode($json, JSON_PRETTY_PRINT+JSON_UNESCAPED_UNICODE));
     fclose($fp);
 }    
