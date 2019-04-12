@@ -14,8 +14,7 @@ try {
     $db = new PDO('sqlite:'.$DB);
     // Set errormode to exceptions
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    //ID를 이용해서 정보 가져오기
+    //정보 가져오기
     $query = "SELECT id, title, title_sort FROM metadata_items WHERE parent_id is null";
     $sth = $db->prepare($query, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
     $sth->execute();
